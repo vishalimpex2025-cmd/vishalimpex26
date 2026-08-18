@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vishal Impex — Wholesale Catalog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F2EAD6;
+    --paper-dark:#E8DBB8;
+    --ink:#241F16;
+    --denim:#2E3B55;
+    --rust:#B5472E;
+    --gold:#C79A3D;
+    --muslin:#FBF7EE;
+    --stitch:#A99568;
+    --radius:6px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    background-image:radial-gradient(circle at 1px 1px, rgba(36,31,22,0.06) 1px, transparent 0);
+    background-size:22px 22px;
+    color:var(--ink);
+    font-family:'Space Grotesk', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+
+  header.stampbar{
+    background:var(--ink);
+    color:var(--paper);
+    padding:22px 20px 18px;
+    border-bottom:6px solid var(--rust);
+  }
+  .stamp-inner{
+    max-width:1000px; margin:0 auto;
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:10px;
+  }
+  .brand{display:flex; flex-direction:column; line-height:1;}
+  .brand .name{font-family:'Bebas Neue', sans-serif; font-size:38px; letter-spacing:3px; color:var(--paper);}
+  .brand .tag{font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); margin-top:6px;}
+  .wa-link{
+    font-family:'JetBrains Mono', monospace; font-size:12px; letter-spacing:1px;
+    text-decoration:none; border:1px solid var(--gold); color:var(--gold);
+    padding:9px 14px; border-radius:999px; white-space:nowrap;
+    transition:background .15s, color .15s;
+  }
+  .wa-link:hover{background:var(--gold); color:var(--ink);}
+  .header-actions{display:flex; align-items:center; gap:10px;}
+  .lock-btn{
+    flex-shrink:0; width:38px; height:38px; border-radius:50%;
+    border:1.5px solid var(--gold); background:transparent; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition:background .15s, transform .12s;
+  }
+  .lock-btn svg{width:17px; height:17px; stroke:var(--gold); fill:none; stroke-width:2;}
+  .lock-btn:hover{transform:scale(1.06);}
+  .lock-btn.unlocked{background:var(--gold);}
+  .lock-btn.unlocked svg{stroke:var(--ink);}
+
+  main{max-width:1000px; margin:0 auto; padding:22px 18px 80px;}
+
+  .controls{
+    display:flex; gap:12px; align-items:center; margin-bottom:26px;
+    position:sticky; top:0; background:var(--paper); padding:14px 0; z-index:5;
+  }
+  .search-wrap{flex:1; position:relative;}
+  .search-wrap input{
+    width:100%; padding:13px 16px 13px 42px; border:2px solid var(--ink);
+    border-radius:999px; background:var(--muslin); font-family:'Space Grotesk', sans-serif;
+    font-size:15px; color:var(--ink); outline:none;
+  }
+  .search-wrap input:focus{border-color:var(--rust); box-shadow:0 0 0 3px rgba(181,71,46,0.15);}
+  .search-wrap svg{position:absolute; left:14px; top:50%; transform:translateY(-50%); width:18px; height:18px; stroke:var(--ink); opacity:.6; pointer-events:none;}
+  .plus-btn{
+    flex-shrink:0; width:48px; height:48px; border-radius:50%;
+    border:2px solid var(--ink); background:var(--rust); color:var(--muslin);
+    font-size:26px; line-height:1; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; transition:transform .12s;
+  }
+  .plus-btn:hover{transform:scale(1.06);}
+  .plus-btn:active{transform:scale(.94);}
+  .admin-note{
+    font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:.5px;
+    color:var(--stitch); text-align:right; margin:-16px 0 20px;
+  }
+
+  .section-label{
+    font-family:'JetBrains Mono', monospace; font-size:12px; letter-spacing:2px;
+    text-transform:uppercase; color:var(--stitch); margin:0 0 14px 4px;
+  }
+
+  .grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:18px;}
+  @media (max-width:720px){ .grid, .product-grid{grid-template-columns:repeat(2, 1fr);} }
+  @media (max-width:420px){ .grid, .product-grid{grid-template-columns:1fr;} }
+  .grid.hidden, .product-grid.hidden{display:none;}
+
+  .tag-card{
+    position:relative; background:var(--muslin); border:2px solid var(--ink);
+    padding:22px 16px 16px; cursor:pointer;
+    clip-path:polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 0 100%);
+    transition:transform .15s, box-shadow .15s; text-align:left;
+  }
+  .tag-card:hover{transform:translateY(-3px) rotate(-0.6deg); box-shadow:5px 6px 0 rgba(36,31,22,0.18);}
+  .tag-card::before{
+    content:""; position:absolute; top:9px; right:9px; width:11px; height:11px;
+    border-radius:50%; background:var(--paper); border:2px solid var(--ink);
+  }
+  .tag-card .item-name{font-family:'Bebas Neue', sans-serif; font-size:24px; letter-spacing:1px; line-height:1.05; margin:0 0 6px; word-break:break-word;}
+  .tag-card .sub-name{font-family:'JetBrains Mono', monospace; font-size:10.5px; letter-spacing:1.5px; text-transform:uppercase; color:var(--denim);}
+  .tag-card .count-badge{
+    display:inline-block; margin-top:12px; font-family:'JetBrains Mono', monospace;
+    font-size:11px; background:var(--gold); color:var(--ink); padding:3px 9px; border-radius:999px;
+  }
+  .tag-card .del-btn{
+    position:absolute; bottom:8px; right:10px; background:none; border:none; color:var(--rust);
+    font-family:'JetBrains Mono', monospace; font-size:11px; cursor:pointer; opacity:.6;
+  }
+  .tag-card .del-btn:hover{opacity:1; text-decoration:underline;}
+
+  .size-badges{display:flex; flex-wrap:wrap; gap:5px; margin-top:10px;}
+  .size-badges span{
+    font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:.5px;
+    border:1px solid var(--denim); color:var(--denim); padding:2px 7px; border-radius:4px;
+  }
+
+  .thumb-wrap{
+    width:100%; aspect-ratio:4/3; border:1.5px solid var(--ink); border-radius:4px;
+    overflow:hidden; margin-bottom:12px; background:var(--paper-dark);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .thumb-wrap img{width:100%; height:100%; object-fit:cover; display:block;}
+  .thumb-wrap .no-photo{font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--stitch); letter-spacing:1px;}
+
+  .empty-state{
+    text-align:center; padding:60px 20px; color:var(--stitch);
+    font-family:'JetBrains Mono', monospace; font-size:13px; letter-spacing:1px;
+  }
+
+  .detail-view.hidden{display:none;}
+  .back-btn{
+    background:none; border:none; font-family:'JetBrains Mono', monospace; font-size:13px;
+    letter-spacing:1px; color:var(--denim); cursor:pointer; padding:0 0 18px;
+  }
+  .back-btn:hover{text-decoration:underline;}
+  .detail-header{
+    display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap;
+    gap:10px; border-bottom:2px dashed var(--stitch); padding-bottom:14px; margin-bottom:20px;
+  }
+  .detail-header h2{font-family:'Bebas Neue', sans-serif; font-size:34px; letter-spacing:1px; margin:0;}
+  .detail-header .sub-name{font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--denim); display:block; margin-top:4px;}
+  .share-cat{
+    font-family:'JetBrains Mono', monospace; font-size:12px; text-decoration:none;
+    border:1px solid var(--denim); color:var(--denim); padding:8px 13px; border-radius:999px;
+  }
+  .share-cat:hover{background:var(--denim); color:var(--muslin);}
+
+  .product-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:18px;}
+  .image-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:14px;}
+  @media (max-width:600px){ .image-grid{grid-template-columns:repeat(2, 1fr);} }
+
+  .img-tile{
+    position:relative; border:2px solid var(--ink); background:var(--muslin);
+    aspect-ratio:1/1; overflow:hidden; border-radius:var(--radius);
+  }
+  .img-tile img{width:100%; height:100%; object-fit:cover; display:block;}
+  .img-tile .del-img{
+    position:absolute; top:5px; right:5px; width:24px; height:24px; border-radius:50%;
+    background:rgba(36,31,22,0.75); color:var(--muslin); border:none; font-size:14px; cursor:pointer; line-height:1;
+  }
+  .add-tile{
+    border:2px dashed var(--stitch); background:transparent; aspect-ratio:1/1; border-radius:var(--radius);
+    display:flex; align-items:center; justify-content:center; flex-direction:column; gap:4px;
+    cursor:pointer; color:var(--stitch); font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:1px;
+  }
+  .add-tile span.plus{font-size:30px; line-height:1; color:var(--rust);}
+  .add-tile:hover{border-color:var(--rust); color:var(--rust);}
+
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(36,31,22,0.55);
+    display:flex; align-items:center; justify-content:center; padding:20px; z-index:50;
+    overflow-y:auto;
+  }
+  .modal-overlay.hidden{display:none;}
+  .modal{background:var(--muslin); border:2px solid var(--ink); border-radius:var(--radius); padding:24px; width:100%; max-width:380px; margin:auto;}
+  .modal h3{font-family:'Bebas Neue', sans-serif; font-size:24px; letter-spacing:1px; margin:0 0 16px;}
+  .modal label{display:block; font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:1px; text-transform:uppercase; color:var(--stitch); margin-bottom:14px;}
+  .modal input[type="text"], .modal input[type="password"], .modal select{
+    width:100%; margin-top:6px; padding:10px 12px; border:1.5px solid var(--ink); border-radius:4px;
+    font-family:'Space Grotesk', sans-serif; font-size:14px; background:var(--paper); outline:none;
+  }
+  .modal input:focus, .modal select:focus{border-color:var(--rust);}
+  .modal .hint{display:block; font-family:'Space Grotesk', sans-serif; text-transform:none; font-size:11px; color:var(--stitch); margin-top:5px; letter-spacing:0;}
+  .modal input[type="file"]{width:100%; margin-top:6px; font-family:'Space Grotesk', sans-serif; font-size:12px;}
+  .modal-actions{display:flex; justify-content:flex-end; gap:10px; margin-top:6px;}
+  .modal-actions button{font-family:'JetBrains Mono', monospace; font-size:12px; letter-spacing:1px; padding:9px 16px; border-radius:999px; cursor:pointer;}
+  .btn-ghost{background:none; border:1.5px solid var(--stitch); color:var(--stitch);}
+  .btn-solid{background:var(--rust); border:1.5px solid var(--ink); color:var(--muslin);}
+
+  footer{text-align:center; padding:20px; font-family:'JetBrains Mono', monospace; font-size:10.5px; letter-spacing:1px; color:var(--stitch);}
+
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important; scroll-behavior:auto !important;} }
+</style>
+</head>
+<body>
+
+<header class="stampbar">
+  <div class="stamp-inner">
+    <div class="brand">
+      <span class="name">VISHAL IMPEX</span>
+      <span class="tag">Readymade Garments · Wholesale Only</span>
+    </div>
+    <div class="header-actions">
+      <a class="wa-link" href="https://wa.me/" target="_blank" rel="noopener">Our WhatsApp Community →</a>
+      <button class="lock-btn" id="lockBtn" title="Owner login to edit">
+        <svg id="lockIcon" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="5" y="11" width="14" height="10" rx="2"></rect>
+          <path d="M8 11V7a4 4 0 0 1 8 0v4"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <div class="controls">
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="searchInput" type="text" placeholder="Search items, e.g. shirts, denim, kurti…" autocomplete="off">
+    </div>
+    <button class="plus-btn" id="addProductBtn" title="Add new product (admin only)">+</button>
+  </div>
+  <p class="admin-note" id="adminNote" style="display:none;">Admin mode — unlocked</p>
+
+  <p class="section-label" id="gridLabel">All Sections</p>
+  <div class="empty-state" id="loadingState">Loading catalog…</div>
+  <div class="grid" id="sectionGrid"></div>
+  <div class="empty-state" id="emptyState" style="display:none;">No sections yet — unlock and tap + to add your first product.</div>
+  <div class="empty-state" id="noMatchState" style="display:none;">No items match your search.</div>
+
+  <!-- SECTION VIEW: list of products in a section -->
+  <section class="detail-view hidden" id="sectionView">
+    <button class="back-btn" id="backToHomeBtn">← Back to all sections</button>
+    <div class="detail-header">
+      <div>
+        <h2 id="sectionTitle"></h2>
+        <span class="sub-name" id="sectionCount"></span>
+      </div>
+    </div>
+    <div class="product-grid" id="productGrid"></div>
+    <div class="empty-state" id="noProductsState" style="display:none;">No products in this section yet.</div>
+  </section>
+
+  <!-- PRODUCT VIEW: photos of one product -->
+  <section class="detail-view hidden" id="productView">
+    <button class="back-btn" id="backToSectionBtn">← Back to section</button>
+    <div class="detail-header">
+      <div>
+        <h2 id="productTitle"></h2>
+        <span class="sub-name" id="productSection"></span>
+        <div class="size-badges" id="productSizes"></div>
+      </div>
+      <a class="share-cat" id="shareCatBtn" href="#" target="_blank" rel="noopener">Share on WhatsApp</a>
+    </div>
+    <div class="image-grid" id="imageGrid"></div>
+  </section>
+
+</main>
+
+<footer>Catalog updates directly to the Vishal Impex WhatsApp community</footer>
+
+<!-- Add product modal (admin only) -->
+<div class="modal-overlay hidden" id="modalOverlay">
+  <div class="modal">
+    <h3>Add Product</h3>
+    <label>Section (folder)
+      <select id="sectionSelect">
+        <option value="__new__">+ Create new section…</option>
+      </select>
+    </label>
+    <label id="newSectionWrap">New Section Name
+      <input id="newSectionName" type="text" placeholder="e.g. Linen Shirts">
+    </label>
+    <label>Product Name
+      <input id="newProductName" type="text" placeholder="e.g. Slim Fit Linen Shirt">
+    </label>
+    <label>Available Sizes
+      <input id="newProductSizes" type="text" placeholder="e.g. S, M, L, XL">
+      <span class="hint">Separate sizes with commas.</span>
+    </label>
+    <label>Photos
+      <input id="newProductPhotos" type="file" accept="image/*" multiple>
+    </label>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="cancelModal">Cancel</button>
+      <button class="btn-solid" id="createModal">Add Product</button>
+    </div>
+  </div>
+</div>
+
+<!-- Owner login modal -->
+<div class="modal-overlay hidden" id="loginOverlay">
+  <div class="modal">
+    <h3>Owner Login</h3>
+    <label>Password
+      <input id="ownerPassword" type="password" placeholder="Enter password" autocomplete="off">
+    </label>
+    <p id="loginError" style="display:none; color:var(--rust); font-family:'JetBrains Mono', monospace; font-size:11px; margin:-8px 0 14px;">Wrong password — try again.</p>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="cancelLogin">Cancel</button>
+      <button class="btn-solid" id="submitLogin">Unlock</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="fileInput" accept="image/*" multiple hidden>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+
+<script>
+  // ---------- Firebase (real backend — works from any device, permanently) ----------
+  const firebaseConfig = {
+    apiKey: "AIzaSyDpQ-9WBniQU13LsTYE4qyBu1Wi-DWKDYg",
+    authDomain: "vishal-impex-c1015.firebaseapp.com",
+    databaseURL: "https://vishal-impex-c1015-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "vishal-impex-c1015",
+    storageBucket: "vishal-impex-c1015.firebasestorage.app",
+    messagingSenderId: "60272486498",
+    appId: "1:60272486498:web:6e6c27de22cf8abcbe893b",
+    measurementId: "G-TTBDXW7PHG"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const fbStorage = firebase.storage();
+
+  // Realtime Database can silently turn a sparse array into an object — normalize
+  // whatever comes back into a plain array so the rest of the app can rely on arrays.
+  function toArray(val){
+    if (Array.isArray(val)) return val;
+    if (val && typeof val === 'object') return Object.keys(val).sort().map(k => val[k]);
+    return [];
+  }
+</script>
+
+<script>
+  // Catalog data now lives in a real Firebase backend, so it works from any
+  // device, any browser, forever — not just inside Claude's preview.
+  //
+  // Storage layout: the catalog "shape" (sections + product names/sizes) lives in
+  // one Realtime Database node. Each product's photo FILES live in Firebase
+  // Storage; only their download URLs are kept in the Database, so the Database
+  // stays tiny no matter how many photos you add.
+  function generateId(){
+    return (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : ('id-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9));
+  }
+
+  const DEFAULT_SECTIONS = [
+    { name: "Linen Shirts", products: [
+        { name: "Slim Fit Linen Shirt", sizes: ["S","M","L","XL"], images: [] }
+    ]},
+    { name: "Cotton Kurtis", products: [] },
+    { name: "Denim Jeans", products: [] }
+  ];
+
+  let sections = [];
+
+  async function saveStructure(){
+    try{
+      const structure = sections.map(sec => ({
+        id: sec.id,
+        name: sec.name,
+        products: sec.products.map(p => ({ id: p.id, name: p.name, sizes: p.sizes }))
+      }));
+      await db.ref('catalogStructure').set(structure);
+    }catch(err){
+      console.error('Save structure failed', err);
+      alert("Could not save your changes — check your connection and try again.");
+    }
+  }
+
+  async function saveProductImages(productId, images){
+    try{
+      await db.ref('productImages/' + productId).set(images);
+    }catch(err){
+      console.error('Save images failed', err);
+      alert("Could not save those photos — check your connection and try again.");
+    }
+  }
+
+  // Uploads one already-compressed photo to Firebase Storage and returns its
+  // public download URL, which is what actually gets saved in the Database.
+  async function uploadProductPhoto(productId, dataUrl){
+    const path = 'products/' + productId + '/' + generateId() + '.jpg';
+    const ref = fbStorage.ref(path);
+    await ref.putString(dataUrl, 'data_url');
+    return await ref.getDownloadURL();
+  }
+
+  async function deleteStoredPhoto(url){
+    try{ await fbStorage.refFromURL(url).delete(); }catch(err){ /* already gone, ignore */ }
+  }
+
+  async function loadCatalog(){
+    let structure = null;
+    try{
+      const snap = await db.ref('catalogStructure').once('value');
+      const val = snap.val();
+      if (val) structure = toArray(val).map(sec => ({ ...sec, products: toArray(sec.products) }));
+    }catch(err){
+      console.error('Load failed', err);
+    }
+
+    if (!structure){
+      structure = DEFAULT_SECTIONS.map(sec => ({
+        id: generateId(),
+        name: sec.name,
+        products: sec.products.map(p => ({ id: generateId(), name: p.name, sizes: p.sizes }))
+      }));
+      sections = structure.map(sec => ({ ...sec, products: sec.products.map(p => ({ ...p, images: [] })) }));
+      await saveStructure();
+      return;
+    }
+
+    sections = structure.map(sec => ({ ...sec, products: sec.products.map(p => ({ ...p, images: [] })) }));
+
+    const fetches = [];
+    sections.forEach(sec => {
+      sec.products.forEach(prod => {
+        fetches.push(
+          db.ref('productImages/' + prod.id).once('value')
+            .then(snap => { prod.images = toArray(snap.val()); })
+            .catch(() => { prod.images = []; })
+        );
+      });
+    });
+    await Promise.all(fetches);
+  }
+
+  // Resizes + compresses a photo before uploading it, so photos stay small and
+  // fast to load instead of uploading huge original phone-camera photos.
+  function compressImage(file){
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const maxDim = 1000;
+          let w = img.width, h = img.height;
+          if (w > maxDim || h > maxDim){
+            if (w > h){ h = Math.round(h * maxDim / w); w = maxDim; }
+            else { w = Math.round(w * maxDim / h); h = maxDim; }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', 0.72));
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  let currentSectionIndex = null;
+  let currentProductIndex = null;
+  let pendingUploadTarget = null; // {sectionIndex, productIndex} for the hidden file input inside product view
+
+  // --- Owner lock ---
+  // On-page lock only — not real security, since anyone can view the page source.
+  // It stops casual customers from editing. Real protection needs a backend login.
+  const OWNER_PASSWORD = "vishal1982";
+  let isEditMode = false;
+
+  const lockBtn       = document.getElementById('lockBtn');
+  const lockIcon      = document.getElementById('lockIcon');
+  const loginOverlay  = document.getElementById('loginOverlay');
+  const ownerPassword = document.getElementById('ownerPassword');
+  const loginError    = document.getElementById('loginError');
+  const cancelLogin   = document.getElementById('cancelLogin');
+  const submitLogin   = document.getElementById('submitLogin');
+  const adminNote     = document.getElementById('adminNote');
+
+  const sectionGrid   = document.getElementById('sectionGrid');
+  const loadingState  = document.getElementById('loadingState');
+  const emptyState    = document.getElementById('emptyState');
+  const noMatchState  = document.getElementById('noMatchState');
+  const gridLabel     = document.getElementById('gridLabel');
+  const searchInput   = document.getElementById('searchInput');
+  const addProductBtn = document.getElementById('addProductBtn');
+  const controlsBar   = document.querySelector('.controls');
+
+  const modalOverlay     = document.getElementById('modalOverlay');
+  const sectionSelect    = document.getElementById('sectionSelect');
+  const newSectionWrap   = document.getElementById('newSectionWrap');
+  const newSectionName   = document.getElementById('newSectionName');
+  const newProductName   = document.getElementById('newProductName');
+  const newProductSizes  = document.getElementById('newProductSizes');
+  const newProductPhotos = document.getElementById('newProductPhotos');
+  const cancelModal      = document.getElementById('cancelModal');
+  const createModal      = document.getElementById('createModal');
+
+  const sectionView    = document.getElementById('sectionView');
+  const sectionTitle   = document.getElementById('sectionTitle');
+  const sectionCount   = document.getElementById('sectionCount');
+  const productGrid    = document.getElementById('productGrid');
+  const noProductsState= document.getElementById('noProductsState');
+  const backToHomeBtn  = document.getElementById('backToHomeBtn');
+
+  const productView    = document.getElementById('productView');
+  const productTitle   = document.getElementById('productTitle');
+  const productSection = document.getElementById('productSection');
+  const productSizesEl = document.getElementById('productSizes');
+  const imageGrid      = document.getElementById('imageGrid');
+  const shareCatBtn    = document.getElementById('shareCatBtn');
+  const backToSectionBtn = document.getElementById('backToSectionBtn');
+  const fileInput      = document.getElementById('fileInput');
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function showHome(){
+    sectionView.classList.add('hidden');
+    productView.classList.add('hidden');
+    controlsBar.style.display = 'flex';
+    gridLabel.style.display = 'block';
+    currentSectionIndex = null;
+    currentProductIndex = null;
+    renderSectionGrid();
+  }
+
+  // ---------- HOME: sections grid ----------
+  function renderSectionGrid(){
+    const query = searchInput.value.trim().toLowerCase();
+    sectionGrid.innerHTML = '';
+
+    if (sections.length === 0){
+      emptyState.style.display = 'block';
+      noMatchState.style.display = 'none';
+      sectionGrid.classList.add('hidden');
+      return;
+    }
+    emptyState.style.display = 'none';
+
+    const filtered = sections
+      .map((sec, idx) => ({ sec, idx }))
+      .filter(({sec}) => !query
+        || sec.name.toLowerCase().includes(query)
+        || sec.products.some(p => p.name.toLowerCase().includes(query)));
+
+    gridLabel.textContent = query ? `Results for "${searchInput.value.trim()}"` : 'All Sections';
+
+    if (filtered.length === 0){
+      noMatchState.style.display = 'block';
+      sectionGrid.classList.add('hidden');
+      return;
+    }
+    noMatchState.style.display = 'none';
+    sectionGrid.classList.remove('hidden');
+
+    filtered.forEach(({sec, idx}) => {
+      const card = document.createElement('div');
+      card.className = 'tag-card';
+      const firstImg = sec.products.find(p => p.images.length > 0);
+      card.innerHTML = `
+        <div class="thumb-wrap">${firstImg ? `<img src="${firstImg.images[0]}" alt="${escapeHtml(sec.name)}">` : `<span class="no-photo">NO PHOTO YET</span>`}</div>
+        <p class="item-name">${escapeHtml(sec.name)}</p>
+        <span class="count-badge">${sec.products.length} product${sec.products.length === 1 ? '' : 's'}</span>
+        ${isEditMode ? `<button class="del-btn" title="Delete section">delete</button>` : ''}
+      `;
+      card.addEventListener('click', (e) => {
+        if (e.target.classList.contains('del-btn')) return;
+        openSection(idx);
+      });
+      const delBtn = card.querySelector('.del-btn');
+      if (delBtn){
+        delBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (confirm(`Delete section "${sec.name}" and all its products?`)){
+            sec.products.forEach(p => {
+              p.images.forEach(url => deleteStoredPhoto(url));
+              db.ref('productImages/' + p.id).remove().catch(() => {});
+            });
+            sections.splice(idx, 1);
+            renderSectionGrid();
+            saveStructure();
+          }
+        });
+      }
+      sectionGrid.appendChild(card);
+    });
+  }
+
+  // ---------- SECTION VIEW: products in a section ----------
+  function openSection(idx){
+    currentSectionIndex = idx;
+    currentProductIndex = null;
+    const sec = sections[idx];
+    sectionTitle.textContent = sec.name;
+    sectionCount.textContent = `${sec.products.length} product${sec.products.length === 1 ? '' : 's'}`;
+    renderProductGrid();
+    controlsBar.style.display = 'none';
+    adminNote.style.display = 'none';
+    gridLabel.style.display = 'none';
+    sectionGrid.classList.add('hidden');
+    emptyState.style.display = 'none';
+    noMatchState.style.display = 'none';
+    productView.classList.add('hidden');
+    sectionView.classList.remove('hidden');
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  function renderProductGrid(){
+    const sec = sections[currentSectionIndex];
+    productGrid.innerHTML = '';
+    if (sec.products.length === 0){
+      noProductsState.style.display = 'block';
+      productGrid.classList.add('hidden');
+      return;
+    }
+    noProductsState.style.display = 'none';
+    productGrid.classList.remove('hidden');
+
+    sec.products.forEach((prod, pIdx) => {
+      const card = document.createElement('div');
+      card.className = 'tag-card';
+      const sizesHtml = prod.sizes.length ? `<div class="size-badges">${prod.sizes.map(s => `<span>${escapeHtml(s)}</span>`).join('')}</div>` : '';
+      card.innerHTML = `
+        <div class="thumb-wrap">${prod.images.length ? `<img src="${prod.images[0]}" alt="${escapeHtml(prod.name)}">` : `<span class="no-photo">NO PHOTO YET</span>`}</div>
+        <p class="item-name">${escapeHtml(prod.name)}</p>
+        ${sizesHtml}
+        <span class="count-badge">${prod.images.length} photo${prod.images.length === 1 ? '' : 's'}</span>
+        ${isEditMode ? `<button class="del-btn" title="Delete product">delete</button>` : ''}
+      `;
+      card.addEventListener('click', (e) => {
+        if (e.target.classList.contains('del-btn')) return;
+        openProduct(pIdx);
+      });
+      const delBtn = card.querySelector('.del-btn');
+      if (delBtn){
+        delBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (confirm(`Delete product "${prod.name}"?`)){
+            prod.images.forEach(url => deleteStoredPhoto(url));
+            db.ref('productImages/' + prod.id).remove().catch(() => {});
+            sec.products.splice(pIdx, 1);
+            sectionCount.textContent = `${sec.products.length} product${sec.products.length === 1 ? '' : 's'}`;
+            renderProductGrid();
+            saveStructure();
+          }
+        });
+      }
+      productGrid.appendChild(card);
+    });
+  }
+
+  // ---------- PRODUCT VIEW: photos of one product ----------
+  function openProduct(pIdx){
+    currentProductIndex = pIdx;
+    const sec = sections[currentSectionIndex];
+    const prod = sec.products[pIdx];
+    productTitle.textContent = prod.name;
+    productSection.textContent = `${sec.name} · Vishal Impex`;
+    productSizesEl.innerHTML = prod.sizes.map(s => `<span>${escapeHtml(s)}</span>`).join('');
+    const waText = encodeURIComponent(`New stock update — ${prod.name} (${sec.name}). Sizes available: ${prod.sizes.join(', ') || 'ask us'}. Message us for wholesale rates & availability.`);
+    shareCatBtn.href = `https://wa.me/?text=${waText}`;
+    renderProductPhotos();
+    sectionView.classList.add('hidden');
+    productView.classList.remove('hidden');
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  function renderProductPhotos(){
+    const prod = sections[currentSectionIndex].products[currentProductIndex];
+    imageGrid.innerHTML = '';
+
+    prod.images.forEach((src, i) => {
+      const tile = document.createElement('div');
+      tile.className = 'img-tile';
+      tile.innerHTML = `<img src="${src}" alt="${escapeHtml(prod.name)} photo ${i+1}">${isEditMode ? '<button class="del-img" title="Remove photo">×</button>' : ''}`;
+      const delImgBtn = tile.querySelector('.del-img');
+      if (delImgBtn){
+        delImgBtn.addEventListener('click', () => {
+          const [removedUrl] = prod.images.splice(i, 1);
+          renderProductPhotos();
+          deleteStoredPhoto(removedUrl);
+          saveProductImages(prod.id, prod.images);
+        });
+      }
+      imageGrid.appendChild(tile);
+    });
+
+    if (isEditMode){
+      const addTile = document.createElement('div');
+      addTile.className = 'add-tile';
+      addTile.innerHTML = `<span class="plus">+</span><span>Add photos</span>`;
+      addTile.addEventListener('click', () => {
+        pendingUploadTarget = { sectionIndex: currentSectionIndex, productIndex: currentProductIndex };
+        fileInput.click();
+      });
+      imageGrid.appendChild(addTile);
+    } else if (prod.images.length === 0){
+      const note = document.createElement('p');
+      note.style.cssText = "grid-column:1/-1; font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--stitch);";
+      note.textContent = "No photos added yet.";
+      imageGrid.appendChild(note);
+    }
+  }
+
+  fileInput.addEventListener('change', async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0 || !pendingUploadTarget) return;
+    const target = pendingUploadTarget;
+    const prod = sections[target.sectionIndex].products[target.productIndex];
+    for (const file of files){
+      try{
+        const dataUrl = await compressImage(file);
+        const url = await uploadProductPhoto(prod.id, dataUrl);
+        prod.images.push(url);
+      }catch(err){
+        console.error('Could not upload photo', err);
+      }
+    }
+    if (currentProductIndex === target.productIndex && currentSectionIndex === target.sectionIndex){
+      renderProductPhotos();
+    }
+    saveProductImages(prod.id, prod.images);
+    fileInput.value = '';
+  });
+
+  // ---------- Navigation ----------
+  backToHomeBtn.addEventListener('click', showHome);
+  backToSectionBtn.addEventListener('click', () => {
+    productView.classList.add('hidden');
+    sectionView.classList.remove('hidden');
+    currentProductIndex = null;
+  });
+
+  // ---------- Search ----------
+  searchInput.addEventListener('input', renderSectionGrid);
+
+  // ---------- Add Product modal (admin only) ----------
+  function refreshSectionSelect(){
+    const preserved = sectionSelect.value;
+    sectionSelect.innerHTML = '<option value="__new__">+ Create new section…</option>' +
+      sections.map((sec, idx) => `<option value="${idx}">${escapeHtml(sec.name)}</option>`).join('');
+    if (preserved && [...sectionSelect.options].some(o => o.value === preserved)){
+      sectionSelect.value = preserved;
+    }
+    newSectionWrap.style.display = sectionSelect.value === '__new__' ? 'block' : 'none';
+  }
+  sectionSelect.addEventListener('change', () => {
+    newSectionWrap.style.display = sectionSelect.value === '__new__' ? 'block' : 'none';
+  });
+
+  addProductBtn.addEventListener('click', () => {
+    if (!isEditMode) return;
+    refreshSectionSelect();
+    if (currentSectionIndex !== null){
+      sectionSelect.value = String(currentSectionIndex);
+      newSectionWrap.style.display = 'none';
+    }
+    newSectionName.value = '';
+    newProductName.value = '';
+    newProductSizes.value = '';
+    newProductPhotos.value = '';
+    modalOverlay.classList.remove('hidden');
+    newProductName.focus();
+  });
+  cancelModal.addEventListener('click', () => modalOverlay.classList.add('hidden'));
+  modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) modalOverlay.classList.add('hidden'); });
+
+  createModal.addEventListener('click', async () => {
+    const name = newProductName.value.trim();
+    if (!name){ newProductName.focus(); return; }
+    const sizes = newProductSizes.value.split(',').map(s => s.trim()).filter(Boolean);
+
+    let targetSectionIdx;
+    if (sectionSelect.value === '__new__'){
+      const secName = newSectionName.value.trim();
+      if (!secName){ newSectionName.focus(); return; }
+      sections.push({ id: generateId(), name: secName, products: [] });
+      targetSectionIdx = sections.length - 1;
+    } else {
+      targetSectionIdx = parseInt(sectionSelect.value, 10);
+    }
+
+    const files = Array.from(newProductPhotos.files || []);
+    const product = { id: generateId(), name, sizes, images: [] };
+
+    createModal.disabled = true;
+    createModal.textContent = 'Adding…';
+    for (const file of files){
+      try{
+        const dataUrl = await compressImage(file);
+        const url = await uploadProductPhoto(product.id, dataUrl);
+        product.images.push(url);
+      }catch(err){
+        console.error('Could not upload photo', err);
+      }
+    }
+
+    sections[targetSectionIdx].products.unshift(product);
+    modalOverlay.classList.add('hidden');
+    createModal.disabled = false;
+    createModal.textContent = 'Add Product';
+
+    if (currentSectionIndex === targetSectionIdx && !sectionView.classList.contains('hidden')){
+      sectionCount.textContent = `${sections[targetSectionIdx].products.length} product${sections[targetSectionIdx].products.length === 1 ? '' : 's'}`;
+      renderProductGrid();
+    } else {
+      renderSectionGrid();
+    }
+    saveStructure();
+    if (product.images.length > 0) saveProductImages(product.id, product.images);
+  });
+
+  // ---------- Lock / unlock ----------
+  function applyLockState(){
+    addProductBtn.style.display = isEditMode ? 'flex' : 'none';
+    adminNote.style.display = isEditMode && sectionView.classList.contains('hidden') && productView.classList.contains('hidden') ? 'block' : 'none';
+    lockBtn.classList.toggle('unlocked', isEditMode);
+    lockBtn.title = isEditMode ? 'Editing unlocked — tap to lock' : 'Owner login to edit';
+    lockIcon.innerHTML = isEditMode
+      ? '<rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 7.5-2"></path>'
+      : '<rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path>';
+  }
+
+  lockBtn.addEventListener('click', () => {
+    if (isEditMode){
+      isEditMode = false;
+      applyLockState();
+      renderSectionGrid();
+      if (currentSectionIndex !== null) renderProductGrid();
+      if (currentProductIndex !== null) renderProductPhotos();
+    } else {
+      ownerPassword.value = '';
+      loginError.style.display = 'none';
+      loginOverlay.classList.remove('hidden');
+      ownerPassword.focus();
+    }
+  });
+
+  function attemptLogin(){
+    if (ownerPassword.value === OWNER_PASSWORD){
+      isEditMode = true;
+      loginOverlay.classList.add('hidden');
+      applyLockState();
+      renderSectionGrid();
+      if (currentSectionIndex !== null) renderProductGrid();
+      if (currentProductIndex !== null) renderProductPhotos();
+    } else {
+      loginError.style.display = 'block';
+      ownerPassword.value = '';
+      ownerPassword.focus();
+    }
+  }
+  cancelLogin.addEventListener('click', () => loginOverlay.classList.add('hidden'));
+  loginOverlay.addEventListener('click', (e) => { if (e.target === loginOverlay) loginOverlay.classList.add('hidden'); });
+  submitLogin.addEventListener('click', attemptLogin);
+  ownerPassword.addEventListener('keydown', (e) => { if (e.key === 'Enter') attemptLogin(); });
+
+  (async function init(){
+    loadingState.style.display = 'block';
+    sectionGrid.classList.add('hidden');
+    await loadCatalog();
+    loadingState.style.display = 'none';
+    applyLockState();
+    renderSectionGrid();
+  })();
+</script>
+
+</body>
+</html>
